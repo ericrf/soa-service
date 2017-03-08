@@ -29,15 +29,15 @@ public class AlunoController {
     @RequestMapping(value={"/", ""},method={PUT, POST})
     public Aluno save(@RequestBody Aluno aluno) {
     	List<Endereco> enderecos = aluno.getEnderecos();
-    	aluno = alunoRepository.saveAndFlush(aluno);
+    	aluno = alunoRepository.save(aluno);
 		salvaEnderecosDoAluno(enderecos, aluno);
     	return aluno;
     }
 
 	private void salvaEnderecosDoAluno(List<Endereco> enderecos, Aluno aluno) {
 		for (Endereco endereco : enderecos) {
-			endereco.setAlunoMatricula(aluno.getMatricula());
-			endereco = enderecoRepository.saveAndFlush(endereco);
+			endereco.setAluno(aluno);
+			endereco = enderecoRepository.save(endereco);
 		}
 		aluno.setEnderecos(enderecos);
 	}
@@ -54,26 +54,11 @@ public class AlunoController {
     
     @RequestMapping(value={"/", ""},method=GET)
     public List<Aluno> findAll() {
-    	List<Aluno> alunos = alunoRepository.findAll();
-    	setaEnderecosDoAluno(alunos);
-        return alunos;
+        return alunoRepository.findAll();
     }
 
     @RequestMapping(value={"/{id}"},method=GET)
     public Aluno findOneById(@PathVariable(value="id") final Long id) {
-    	Aluno aluno = alunoRepository.findOne(id);
-    	setaEnderecosDoAluno(aluno);
-        return aluno;
+        return alunoRepository.findOne(id);
     }
-    
-    
-    private void setaEnderecosDoAluno(List<Aluno> alunos) {
-    	alunos.forEach(aluno ->{
-    		setaEnderecosDoAluno(aluno);
-    	});
-	}
-
-	private void setaEnderecosDoAluno(Aluno aluno) {
-		aluno.setEnderecos(enderecoRepository.findByAlunoMatricula(aluno.getMatricula()));
-	}
 }
