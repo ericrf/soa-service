@@ -44,11 +44,6 @@ public class AlunoController {
     
     @RequestMapping(value={"/{id}"},method=RequestMethod.DELETE)
     public void delete(@PathVariable(value="id") final Long id) {
-    	Aluno aluno = alunoRepository.findOne(id);
-    	enderecoRepository.findByAlunoMatricula(aluno.getMatricula())
-    		.forEach(endereco -> {
-    			enderecoRepository.delete(endereco.getId());
-    		});
     	alunoRepository.delete(id);
     }
     
