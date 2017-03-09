@@ -1,5 +1,7 @@
 package br.ufpr.sept.soa.domain;
 
+import static javax.persistence.FetchType.LAZY;
+
 import java.util.List;
 
 import javax.persistence.CascadeType;
@@ -9,11 +11,13 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.OneToMany;
 
+import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Data
 @NoArgsConstructor
+@AllArgsConstructor
 @Entity
 public class Aluno {
 	@Id
@@ -23,6 +27,6 @@ public class Aluno {
     private String nome;
     private int idade;
     
-    @OneToMany(mappedBy = "aluno", cascade = CascadeType.ALL)
+    @OneToMany(fetch=LAZY, mappedBy = "aluno", cascade = CascadeType.ALL)
     private List<Endereco> enderecos;
 }
