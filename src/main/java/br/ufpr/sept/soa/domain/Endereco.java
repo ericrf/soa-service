@@ -32,14 +32,10 @@ public class Endereco {
     
     @ManyToOne(fetch=FetchType.LAZY)
     @JoinColumn(name = "aluno_id")
-    
+    @JsonIgnore
+ 
     private Aluno aluno;
     
-    @JsonIgnore
-    public Aluno getAluno(){
-    	return aluno;
-    }
-
 	public Endereco(String logradouro, String numero, String complemento, int cep, String bairro, String cidade,
 			String estado) {
 				this.logradouro = logradouro;
