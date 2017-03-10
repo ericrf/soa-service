@@ -1,1 +1,1 @@
-web: java -jar target/soa-service.jar
+web: java -Dserver.port=$PORT -jar target/soa-service.jar
