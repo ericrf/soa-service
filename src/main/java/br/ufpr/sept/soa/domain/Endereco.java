@@ -39,4 +39,15 @@ public class Endereco {
     public Aluno getAluno(){
     	return aluno;
     }
+
+	public Endereco(String logradouro, String numero, String complemento, int cep, String bairro, String cidade,
+			String estado) {
+				this.logradouro = logradouro;
+				this.numero = numero;
+				this.complemento = complemento;
+				this.cep = cep;
+				this.bairro = bairro;
+				this.cidade = cidade;
+				this.estado = estado;
+	}
 }
