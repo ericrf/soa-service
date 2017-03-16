@@ -14,46 +14,31 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
 import br.ufpr.sept.soa.domain.Aluno;
-import br.ufpr.sept.soa.domain.Endereco;
 
 @RestController
 @RequestMapping("/alunos")
 public class AlunoController {
 
 	@Autowired
-	AlunoRepository alunoRepository;
-	
-	@Autowired
-	EnderecoRepository enderecoRepository;
+	AlunoRepository repository;
 	
     @RequestMapping(value={"/", ""},method={PUT, POST})
     public Aluno save(@RequestBody Aluno aluno) {
-    	List<Endereco> enderecos = aluno.getEnderecos();
-    	aluno = alunoRepository.save(aluno);
-		salvaEnderecosDoAluno(enderecos, aluno);
-    	return aluno;
+    	return repository.save(aluno);
     }
-
-	private void salvaEnderecosDoAluno(List<Endereco> enderecos, Aluno aluno) {
-		for (Endereco endereco : enderecos) {
-			endereco.setAluno(aluno);
-			endereco = enderecoRepository.save(endereco);
-		}
-		aluno.setEnderecos(enderecos);
-	}
     
     @RequestMapping(value={"/{id}"},method=RequestMethod.DELETE)
     public void delete(@PathVariable(value="id") final Long id) {
-    	alunoRepository.delete(id);
+    	repository.delete(id);
     }
     
     @RequestMapping(value={"/", ""},method=GET)
     public List<Aluno> findAll() {
-        return alunoRepository.findAll();
+        return repository.findAll();
     }
 
     @RequestMapping(value={"/{id}"},method=GET)
     public Aluno findOneById(@PathVariable(value="id") final Long id) {
-        return alunoRepository.findOne(id);
+        return repository.findOne(id);
     }
 }

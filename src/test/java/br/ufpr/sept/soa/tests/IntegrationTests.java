@@ -2,6 +2,7 @@ package br.ufpr.sept.soa.tests;
 
 import static org.junit.Assert.assertNotNull;
 import static org.springframework.test.web.servlet.setup.MockMvcBuilders.webAppContextSetup;
+import static java.util.Arrays.asList;
 import static org.hamcrest.Matchers.*;
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
@@ -30,7 +31,11 @@ import org.springframework.test.context.web.WebAppConfiguration;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.ResultActions;
+import org.springframework.web.client.RestTemplate;
 import org.springframework.web.context.WebApplicationContext;
+
+import com.fasterxml.jackson.core.JsonFactory;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import br.ufpr.sept.soa.domain.Aluno;
 import br.ufpr.sept.soa.domain.Endereco;
@@ -92,10 +97,7 @@ public class IntegrationTests {
     	ResultActions actions = mvc.perform(get("/alunos/1")
             .contentType(contentType))
             .andExpect(status().isOk());
-    	assertAlunoJsonPath(actions, hasSize(2));
-    	assertEnderecoHomeJsonPath(actions);
-    	assertEnderecoObjectiveJsonPath(actions);
-    	
+    	assertAlunoJsonPath(actions);
     }
 
     
@@ -103,25 +105,30 @@ public class IntegrationTests {
     @Sql(executionPhase=Sql.ExecutionPhase.BEFORE_TEST_METHOD, scripts="classpath:config/schema.sql")
     public void testInsert() throws IOException, Exception{
     	Endereco endereco = new Endereco(LOGRADOURO, NUMERO, COMPLEMENTO, CEP, BAIRRO, CIDADE, ESTADO);
-		Aluno aluno = new Aluno(0, "06460775974","Eric Rodrigo de Freitas", 29, Arrays.asList(endereco));
+		Aluno aluno = new Aluno(0, "06460775974","Eric Rodrigo de Freitas", 29, asList(endereco));
     	ResultActions actions = mvc.perform(post("/alunos")
                 .content(json(aluno))
                 .contentType(contentType))
                 .andExpect(status().isOk());
-    	assertAlunoJsonPath(actions, hasSize(1));
-    	assertEnderecoHomeJsonPath(actions);
+    	assertAlunoJsonPath(actions);
     }
     
     @Test
     @Sql(executionPhase=Sql.ExecutionPhase.BEFORE_TEST_METHOD, scripts={"classpath:config/schema.sql", "classpath:config/data.sql"} )
     public void testUpdate() throws IOException, Exception{
-    	Endereco endereco = new Endereco(LOGRADOURO, NUMERO, COMPLEMENTO, CEP, BAIRRO, CIDADE, ESTADO);
-		Aluno aluno = new Aluno(1, "06460775974","Eric Rodrigo de Freitas", 29, Arrays.asList(endereco));
-    	ResultActions actions = mvc.perform(put("/alunos")
+    	String nome = "Ana Paula Bail dos Santos";
+    	
+    	String json = mvc.perform(get("/alunos/1")).andReturn().getResponse().getContentAsString();
+    	ObjectMapper mapper = new ObjectMapper(new JsonFactory());
+    	Aluno aluno = mapper.readValue(json, Aluno.class);
+		aluno.setNome(nome);
+    	
+		ResultActions actions = mvc.perform(put("/alunos")
                 .content(json(aluno))
                 .contentType(contentType))
                 .andExpect(status().isOk());
-    	assertAlunoJsonPath(actions, hasSize(1));
+    	assertAluno(actions, 1, 1, nome, "06460775974", 29, LOGRADOURO, NUMERO, COMPLEMENTO, BAIRRO,
+				CIDADE, ESTADO, CEP);
     }
     
     
@@ -134,35 +141,28 @@ public class IntegrationTests {
     	
     }
     
-    private void assertAlunoJsonPath(ResultActions actions, Matcher<Collection<? extends Object>> enderecosHasSize) throws Exception {
-		actions.andExpect(jsonPath("$.matricula", is(1)))
-            .andExpect(jsonPath("$.nome", is("Eric Rodrigo de Freitas")))
-            .andExpect(jsonPath("$.cpf", is("06460775974")))
-            .andExpect(jsonPath("$.idade", is(29)))
-            .andExpect(jsonPath("$.enderecos", enderecosHasSize));
+    private void assertAlunoJsonPath(ResultActions actions) throws Exception {
+		assertAluno(actions, 1, 1, "Eric Rodrigo de Freitas", "06460775974", 29, LOGRADOURO, NUMERO, COMPLEMENTO, BAIRRO,
+				CIDADE, ESTADO, CEP);
             
 	}
 
-	private void assertEnderecoHomeJsonPath(ResultActions actions) throws Exception {
-		actions.andExpect(jsonPath("$.enderecos[0].id", is(1)))
-			.andExpect(jsonPath("$.enderecos[0].logradouro", is(LOGRADOURO)))
-            .andExpect(jsonPath("$.enderecos[0].numero", is(NUMERO)))
-            .andExpect(jsonPath("$.enderecos[0].complemento", is(COMPLEMENTO)))
-            .andExpect(jsonPath("$.enderecos[0].bairro", is(BAIRRO)))
-            .andExpect(jsonPath("$.enderecos[0].cidade", is(CIDADE)))
-            .andExpect(jsonPath("$.enderecos[0].estado", is(ESTADO)))
-            .andExpect(jsonPath("$.enderecos[0].cep", is(CEP)));
-	}
-	
-	private void assertEnderecoObjectiveJsonPath(ResultActions actions) throws Exception {
-		actions.andExpect(jsonPath("$.enderecos[1].id", is(2)))
-	        .andExpect(jsonPath("$.enderecos[1].logradouro", is("Av. João Gualberto")))
-	        .andExpect(jsonPath("$.enderecos[1].numero", is("1740")))
-	        .andExpect(jsonPath("$.enderecos[1].complemento", is("9° Andar")))
-	        .andExpect(jsonPath("$.enderecos[1].bairro", is("Juvevê")))
-	        .andExpect(jsonPath("$.enderecos[1].cidade", is("Curitiba")))
-	        .andExpect(jsonPath("$.enderecos[1].estado", is("Paraná")))
-	        .andExpect(jsonPath("$.enderecos[1].cep", is(80030001)));
+	private void assertAluno(ResultActions actions, int quantidadeEnderecos, int matricula, String nome, String cpf,
+			int idade, String logradouro, String numero, String complemento, String bairro, String cidade,
+			String estado, int cep) throws Exception {
+		actions.andExpect(jsonPath("$.matricula", is(matricula)))
+            .andExpect(jsonPath("$.nome", is(nome)))
+            .andExpect(jsonPath("$.cpf", is(cpf)))
+            .andExpect(jsonPath("$.idade", is(idade)))
+            .andExpect(jsonPath("$.enderecos", hasSize(quantidadeEnderecos)))
+			.andExpect(jsonPath("$.enderecos[0].id", is(quantidadeEnderecos)))
+			.andExpect(jsonPath("$.enderecos[0].logradouro", is(logradouro)))
+	        .andExpect(jsonPath("$.enderecos[0].numero", is(numero)))
+	        .andExpect(jsonPath("$.enderecos[0].complemento", is(complemento)))
+	        .andExpect(jsonPath("$.enderecos[0].bairro", is(bairro)))
+	        .andExpect(jsonPath("$.enderecos[0].cidade", is(cidade)))
+	        .andExpect(jsonPath("$.enderecos[0].estado", is(estado)))
+	        .andExpect(jsonPath("$.enderecos[0].cep", is(cep)));
 	}
     
     @Autowired
@@ -192,5 +192,14 @@ public class IntegrationTests {
                 o, MediaType.APPLICATION_JSON, mockHttpOutputMessage);
         return mockHttpOutputMessage.getBodyAsString();
     }
+    
+    protected String aluno(Object o) throws IOException {
+        MockHttpOutputMessage mockHttpOutputMessage = new MockHttpOutputMessage();
+        this.mappingJackson2HttpMessageConverter.write(
+                o, MediaType.APPLICATION_JSON, mockHttpOutputMessage);
+        return mockHttpOutputMessage.getBodyAsString();
+    }
+    
+    
 
 }

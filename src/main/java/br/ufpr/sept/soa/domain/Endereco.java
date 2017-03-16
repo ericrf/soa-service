@@ -9,7 +9,6 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -17,7 +16,6 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @Entity
-@JsonIgnoreProperties(value={"aluno"})
 public class Endereco {
 	@Id
     @GeneratedValue(strategy=GenerationType.AUTO)
@@ -33,7 +31,6 @@ public class Endereco {
     @ManyToOne(fetch=FetchType.LAZY)
     @JoinColumn(name = "aluno_id")
     @JsonIgnore
- 
     private Aluno aluno;
     
 	public Endereco(String logradouro, String numero, String complemento, int cep, String bairro, String cidade,
