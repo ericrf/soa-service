@@ -111,6 +111,11 @@ public class IntegrationTests {
                 .contentType(contentType))
                 .andExpect(status().isOk());
     	assertAlunoJsonPath(actions);
+    	
+    	actions = mvc.perform(get("/alunos/1")
+    			.contentType(contentType))
+    			.andExpect(status().isOk());
+    	assertAlunoJsonPath(actions);
     }
     
     @Test

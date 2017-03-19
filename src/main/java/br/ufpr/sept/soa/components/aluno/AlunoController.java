@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
 import br.ufpr.sept.soa.domain.Aluno;
+import br.ufpr.sept.soa.domain.Endereco;
 
 @RestController
 @RequestMapping("/alunos")
@@ -24,6 +25,10 @@ public class AlunoController {
 	
     @RequestMapping(value={"/", ""},method={PUT, POST})
     public Aluno save(@RequestBody Aluno aluno) {
+    	List<Endereco> enderecos = aluno.getEnderecos();
+    	for (Endereco endereco : enderecos) {
+			endereco.setAluno(aluno);
+		}
     	return repository.save(aluno);
     }
     
